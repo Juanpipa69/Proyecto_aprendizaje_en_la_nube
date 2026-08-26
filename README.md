@@ -43,3 +43,23 @@ El proyecto utiliza el archivo `Customer Churn.csv`, el cual registra datos demo
 * **Instalar dependencias:** `pip install -r requirements.txt`
 * **Ejecutar el entrenamiento:** `python src/train.py`
 * **Generar predicciones:** `python src/predict.py --input data/Customer\ Churn.csv`
+
+# Fase 1: Planificación y Setup del Proyecto
+
+## 1.1 Selección del Proyecto
+* **Problema Elegido:** Predicción de Abandono (Churn) de Clientes en Telecomunicaciones. Es un problema de clasificación binaria.
+* **Problema de Negocio (Hipotético):** La empresa de telecomunicaciones está perdiendo ingresos debido a una alta tasa de cancelación de contratos. Retener a un cliente existente es mucho más barato que adquirir uno nuevo. Este modelo permitirá al equipo de retención identificar clientes de alto riesgo y ofrecerles promociones preventivas personalizadas, aumentando el LTV (Life Time Value) y reduciendo la pérdida de ingresos.
+* **Métricas de Éxito:** 
+  * **Técnica:** Maximizar el `F1-Score` y el `ROC-AUC` (dado que el dataset suele estar desbalanceado). Un Recall alto es crucial para no dejar escapar falsos negativos (clientes que se van pero el modelo no detectó).
+  * **Negocio:** Reducir la tasa de churn mensual en un 15% en el segmento de alto riesgo.
+* **Alcance del Proyecto:**
+  * **MVP (Producto Mínimo Viable):** Modelo baseline de Machine Learning (Regresión Logística/Random Forest) entrenado con datos limpios y empaquetado en una estructura de MLOps básica, expuesto posiblemente mediante un script de predicción simple.
+
+### Timeline del Proyecto (MVP)
+
+| Tarea | Duración Estimada | Responsable | Estado |
+| :--- | :--- | :--- | :--- |
+| **Fase 1:** Setup, Planificación y EDA | Semana 1 | Juan | En progreso |
+| **Fase 2:** Preprocesamiento e Ing. Características | Semana 2 | Juan | Pendiente |
+| **Fase 3:** Entrenamiento y Selección de Modelos | Semana 3 | Juan | Pendiente |
+| **Fase 4:** Refactorización MLOps y Despliegue (API) | Semana 4 | Juan | Pendiente |
