@@ -59,7 +59,7 @@ El proyecto utiliza el archivo `Customer Churn.csv`, el cual registra datos demo
 
 | Tarea | Duración Estimada | Responsable | Estado |
 | :--- | :--- | :--- | :--- |
-| **Fase 1:** Setup, Planificación y EDA | Semana 1 | Juan | En progreso |
+| **Fase 1:** Setup, Planificación y EDA | Semana 1 | Mariana | En progreso |
 | **Fase 2:** Preprocesamiento e Ing. Características | Semana 2 | Juan | Pendiente |
-| **Fase 3:** Entrenamiento y Selección de Modelos | Semana 3 | Juan | Pendiente |
-| **Fase 4:** Refactorización MLOps y Despliegue (API) | Semana 4 | Juan | Pendiente |
+| **Fase 3:** Entrenamiento y Selección de Modelos | Semana 3 | Ceneida | Pendiente |
+| **Fase 4:** Refactorización MLOps y Despliegue (API) | Semana 4 | Todos | Pendiente |
