@@ -23,6 +23,41 @@ def cargar_datos(ruta: str) -> pd.DataFrame:
     return df
 
 
+@task(name="validar_datos", log_prints=True)
+def validar_datos(df: pd.DataFrame) -> pd.DataFrame:
+    """Valida que el dataset tenga las columnas y tipos esperados antes de procesar."""
+    columnas_esperadas = {
+        "Call  Failure",
+        "Complains",
+        "Subscription  Length",
+        "Charge  Amount",
+        "Seconds of Use",
+        "Frequency of use",
+        "Frequency of SMS",
+        "Distinct Called Numbers",
+        "Age Group",
+        "Tariff Plan",
+        "Status",
+        "Age",
+        "Customer Value",
+        "Churn",
+    }
+    columnas_reales = set(df.columns)
+
+    faltantes = columnas_esperadas - columnas_reales
+    if faltantes:
+        raise ValueError(f"Faltan columnas esperadas en el dataset: {faltantes}")
+
+    if not set(df["Churn"].unique()).issubset({0, 1}):
+        raise ValueError("La columna Churn debe contener solo valores 0 o 1")
+
+    if df.shape[0] == 0:
+        raise ValueError("El dataset está vacío")
+
+    print(f"Validación OK: {df.shape[0]} filas, todas las columnas esperadas presentes")
+    return df
+
+
 @task(name="limpiar_datos", log_prints=True)
 def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
     """Elimina duplicados exactos (hallazgo del EDA: ~9.5% del dataset)."""
@@ -35,6 +70,13 @@ def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
 @task(name="preparar_features", log_prints=True)
 def preparar_features(df: pd.DataFrame):
     """Split train/test, escalado y balanceo con SMOTE (solo en train)."""
+    # Feature engineering: uso promedio por mes de suscripción
+    # (un cliente con mucho uso pero suscripción corta se comporta distinto
+    # a uno con el mismo uso pero muchos meses de antigüedad)
+    df = df.copy()
+    df["Uso_Promedio_Mensual"] = df["Seconds of Use"] / df[
+        "Subscription  Length"
+    ].replace(0, 1)
     X = df.drop(columns=["Churn"])
     y = df["Churn"]
 
@@ -95,6 +137,7 @@ def entrenar_y_registrar_modelo(X_train_bal, X_test_scaled, y_train_bal, y_test)
 def pipeline_entrenamiento(ruta_datos: str = "data/raw/Customer Churn.csv"):
     """Flow principal: orquesta todo el pipeline de entrenamiento."""
     df = cargar_datos(ruta_datos)
+    df = validar_datos(df)
     df_limpio = limpiar_datos(df)
     X_train_bal, X_test_scaled, y_train_bal, y_test = preparar_features(df_limpio)
     resultado = entrenar_y_registrar_modelo(
@@ -104,4 +147,11 @@ def pipeline_entrenamiento(ruta_datos: str = "data/raw/Customer Churn.csv"):
 
 
 if __name__ == "__main__":
-    pipeline_entrenamiento()
+    # Ejecución directa (para pruebas)
+    # pipeline_entrenamiento()
+
+    # Deployment con scheduling automático: corre todos los días a las 2:00 AM
+    pipeline_entrenamiento.serve(
+        name="entrenamiento-diario-churn",
+        cron="0 2 * * *",
+    )
