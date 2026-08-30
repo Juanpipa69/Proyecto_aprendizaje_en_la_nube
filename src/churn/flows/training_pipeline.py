@@ -69,14 +69,12 @@ def limpiar_datos(df: pd.DataFrame) -> pd.DataFrame:
 
 @task(name="preparar_features", log_prints=True)
 def preparar_features(df: pd.DataFrame):
-    """Split train/test, escalado y balanceo con SMOTE (solo en train)."""
-    # Feature engineering: uso promedio por mes de suscripción
-    # (un cliente con mucho uso pero suscripción corta se comporta distinto
-    # a uno con el mismo uso pero muchos meses de antigüedad)
+    """Feature engineering y split train/test (sin escalar todavía)."""
     df = df.copy()
     df["Uso_Promedio_Mensual"] = df["Seconds of Use"] / df[
         "Subscription  Length"
     ].replace(0, 1)
+
     X = df.drop(columns=["Churn"])
     y = df["Churn"]
 
@@ -84,40 +82,53 @@ def preparar_features(df: pd.DataFrame):
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-
-    smote = SMOTE(random_state=42)
-    X_train_bal, y_train_bal = smote.fit_resample(X_train_scaled, y_train)
-
-    print(f"Train balanceado: {X_train_bal.shape[0]} filas")
-    return X_train_bal, X_test_scaled, y_train_bal, y_test
+    print(f"Train: {X_train.shape[0]} filas | Test: {X_test.shape[0]} filas")
+    return X_train, X_test, y_train, y_test
 
 
 @task(name="entrenar_y_registrar_modelo", log_prints=True)
-def entrenar_y_registrar_modelo(X_train_bal, X_test_scaled, y_train_bal, y_test):
-    """Entrena Random Forest, lo trackea en MLflow y lo promueve a @champion."""
+def entrenar_y_registrar_modelo(X_train, X_test, y_train, y_test):
+    """Entrena un Pipeline completo (scaler + SMOTE + modelo), lo trackea
+    en MLflow y lo promueve a @champion. El Pipeline queda listo para
+    recibir datos crudos en producción (la API no necesita escalar a mano)."""
+    from imblearn.pipeline import Pipeline as ImbPipeline
+
     mlflow.set_tracking_uri("sqlite:///mlflow.db")
     mlflow.set_experiment("churn-prediction")
 
-    with mlflow.start_run(run_name="random_forest_pipeline"):
-        modelo = RandomForestClassifier(random_state=42, n_estimators=100)
-        modelo.fit(X_train_bal, y_train_bal)
+    with mlflow.start_run(run_name="random_forest_pipeline_completo"):
+        pipeline = ImbPipeline(
+            [
+                ("scaler", StandardScaler()),
+                ("smote", SMOTE(random_state=42)),
+                ("modelo", RandomForestClassifier(random_state=42, n_estimators=100)),
+            ]
+        )
 
-        y_pred = modelo.predict(X_test_scaled)
-        y_proba = modelo.predict_proba(X_test_scaled)[:, 1]
+        pipeline.fit(X_train, y_train)
+
+        y_pred = pipeline.predict(X_test)
+        y_proba = pipeline.predict_proba(X_test)[:, 1]
 
         f1 = f1_score(y_test, y_pred)
         roc_auc = roc_auc_score(y_test, y_proba)
 
         mlflow.log_param("modelo", "random_forest")
         mlflow.log_param("balanceo", "SMOTE")
+        mlflow.log_param("incluye_scaler", True)
         mlflow.log_metric("f1_score", f1)
         mlflow.log_metric("roc_auc", roc_auc)
 
         mlflow.sklearn.log_model(
-            modelo, name="modelo", registered_model_name="churn-random-forest"
+            pipeline,
+            name="modelo",
+            registered_model_name="churn-random-forest",
+            skops_trusted_types=[
+                "imblearn.over_sampling._smote.base.SMOTE",
+                "imblearn.pipeline.Pipeline",
+                "sklearn.metrics._dist_metrics.EuclideanDistance64",
+                "sklearn.neighbors._kd_tree.KDTree",
+            ],
         )
 
         print(classification_report(y_test, y_pred, zero_division=0))
@@ -139,10 +150,8 @@ def pipeline_entrenamiento(ruta_datos: str = "data/raw/Customer Churn.csv"):
     df = cargar_datos(ruta_datos)
     df = validar_datos(df)
     df_limpio = limpiar_datos(df)
-    X_train_bal, X_test_scaled, y_train_bal, y_test = preparar_features(df_limpio)
-    resultado = entrenar_y_registrar_modelo(
-        X_train_bal, X_test_scaled, y_train_bal, y_test
-    )
+    X_train, X_test, y_train, y_test = preparar_features(df_limpio)
+    resultado = entrenar_y_registrar_modelo(X_train, X_test, y_train, y_test)
     return resultado
 
 
