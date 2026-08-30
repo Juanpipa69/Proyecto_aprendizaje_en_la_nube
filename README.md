@@ -59,7 +59,6 @@ El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI)
   * **Negocio:** Reducir la tasa de churn mensual en un 15% en el segmento de alto riesgo.
 * **Alcance del Proyecto:**
   * **MVP (Producto Mínimo Viable):** Modelo baseline de Machine Learning (Regresión Logística/Random Forest) entrenado con datos limpios y empaquetado en una estructura de MLOps básica, expuesto posiblemente mediante un script de predicción simple.
-
 ### Estado del Proyecto (según las 6 fases del curso)
 
 | Fase | Contenido | Responsable | Estado |
@@ -67,6 +66,8 @@ El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI)
 | **Fase 1:** Planificación, Setup y EDA | Selección de dataset, entorno, análisis exploratorio, baseline | Mariana / Ceneida | ✅ Completa |
 | **Fase 2:** Experiment Tracking | MLflow, comparación de modelos, model registry (`@champion`) | Ceneida | ✅ Completa |
 | **Fase 3:** Pipeline de Entrenamiento | Automatización con Prefect, validación de datos, feature engineering, scheduling | Ceneida | ✅ Completa |
-| **Fase 4:** Deployment | Dockerfile, API REST con FastAPI | Mariana / Juan | ⏳ Pendiente |
+| **Fase 4:** Deployment | Dockerfile, API REST con FastAPI (`/predict`) | Ceneida | ✅ Completa |
 | **Fase 5:** Monitoreo | Reporte de drift, diseño de monitoreo | Por asignar | ⏳ Pendiente |
 | **Fase 6:** Testing y Best Practices | Unit tests, linter, pre-commit | Por asignar | ⏳ Pendiente |
+
+> Para probar la API localmente: `python -m uvicorn src.churn.api.main:app --reload`, luego abrir `http://127.0.0.1:8000/docs`.|
