@@ -4,30 +4,27 @@
 
 **Descripción del Dataset**
 
-El proyecto utiliza el archivo `Customer Churn.csv`, el cual registra datos demográficos, metadatos de cuenta y patrones de uso de servicios para predecir la pérdida de clientes.
+El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI), con datos de comportamiento de uso de un operador de telecomunicaciones para predecir el abandono de clientes. Son 3,150 registros, 13 variables predictoras, todas numéricas desde el origen (sin texto que codificar) y sin nulos.
 
 | Categoría de Características | Descripción | Atributos Clave |
-| :--- | :--- | :--- |
-| **Demografía** | Detalles personales del cliente | `Gender`, `SeniorCitizen`, `Partner`, `Dependents` |
-| **Metadatos de Cuenta** | Historial contractual y financiero | `Tenure`, `Contract`, `PaymentMethod`, `MonthlyCharges` |
-| **Servicios Suscritos** | Productos activos y agregados | `InternetService`, `OnlineSecurity`, `TechSupport` |
-| **Variable Objetivo** | Indicador de abandono del cliente | `Churn` (Sí/No mapeado a valores binarios) |
+| :--- | :--- | :--- 
+| **Uso del servicio** | Volumen de llamadas, SMS y datos | `Seconds of Use`, `Frequency of use`, `Frequency of SMS`, `Distinct Called Numbers` |
+| **Calidad de servicio** | Fallos e incidencias | `Call Failure`, `Complains` |
+| **Plan y cuenta** | Antigüedad, tarifa y estado | `Subscription Length`, `Charge Amount`, `Tariff Plan`, `Status` |
+| **Demografía y valor** | Perfil del cliente | `Age`, `Age Group`, `Customer Value` |
+| **Variable Objetivo** | Indicador de abandono del cliente | `Churn` (0 = se queda, 1 = abandona; ya viene codificada) |
 
 **Flujo de Trabajo de Machine Learning**
 
-* **Limpieza y Preprocesamiento de Datos:** Manejo de valores nulos o faltantes, escalado con `StandardScaler` y aplicación de One-Hot Encoding para variables categóricas.
-* **Análisis Exploratorio de Datos (EDA):** Identificación de indicadores clave de abandono, como la duración del contrato, el tipo de pago y la antigüedad (`tenure`).
+* **Limpieza y Preprocesamiento de Datos:** Revisión de duplicados (300 filas duplicadas detectadas, ~9.5% del dataset) y escalado con `StandardScaler` sobre variables numéricas. No se requiere One-Hot Encoding porque el dataset no tiene variables categóricas de texto.
+* **Análisis Exploratorio de Datos (EDA):** Identificación de indicadores clave de abandono, como la duración de la suscripción (`Subscription Length`), la frecuencia de uso y las quejas del cliente (`Complains`).
 * **Manejo del Desbalanceo de Clases:** Aplicación de SMOTE (Técnica de Sobremuestreo de Minorías Sintéticas) para equilibrar la distribución de la variable objetivo.
 * **Selección de Modelos:** Entrenamiento y evaluación de múltiples algoritmos de clasificación, incluyendo Regresión Logística, Random Forest y XGBoost.
 * **Optimización de Hiperparámetros:** Ajuste fino de parámetros mediante `GridSearchCV` priorizando métricas como Recall y ROC-AUC.
 
-**Comparativa de Modelos**
+ **Comparativa de Modelos**
 
-| Modelo | Exactitud (Accuracy) | Precisión | Exhaustividad (Recall) | F1-Score | ROC-AUC |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Regresión Logística** | 0.79 | 0.64 | 0.55 | 0.59 | 0.82 |
-| **Random Forest** | 0.81 | 0.67 | 0.59 | 0.63 | 0.85 |
-| **XGBoost (Optimizado)** | **0.84** | **0.73** | **0.71** | **0.72** | **0.89** |
+>  **Pendiente.** Los modelos aún no se han entrenado (Fase 3 del proyecto, en curso). Esta tabla se completará con resultados reales de Regresión Logística, Random Forest y XGBoost una vez finalizado el entrenamiento y la optimización de hiperparámetros.
 
 **Estructura del Repositorio**
 
