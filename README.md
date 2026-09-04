@@ -67,7 +67,9 @@ El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI)
 | **Fase 2:** Experiment Tracking | MLflow, comparación de modelos, model registry (`@champion`) | Ceneida | ✅ Completa |
 | **Fase 3:** Pipeline de Entrenamiento | Automatización con Prefect, validación de datos, feature engineering, scheduling | Ceneida | ✅ Completa |
 | **Fase 4:** Deployment | Dockerfile, API REST con FastAPI (`/predict`) | Ceneida | ✅ Completa |
-| **Fase 5:** Monitoreo | Reporte de drift, diseño de monitoreo | Por asignar | ⏳ Pendiente |
+| **Fase 5:** Monitoreo | Reporte de drift (Evidently) + diseño de monitoreo (métricas, umbrales, plan de acción) | Compañero(a) / Mariana | ✅ Completa |
 | **Fase 6:** Testing y Best Practices | Unit tests, linter, pre-commit | Por asignar | ⏳ Pendiente |
 
 > Para probar la API localmente: `python -m uvicorn src.churn.api.main:app --reload`, luego abrir `http://127.0.0.1:8000/docs`.|
+> Para correr la API con Docker: `docker build -t churn-api .` y luego `docker run -p 8000:8000 churn-api`.
+> Para generar el reporte de drift: `python Monitoring/drift_monitoring.py`, luego abrir `reports/data_drift_report.html`.
