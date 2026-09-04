@@ -2,14 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copiar solo requirements primero (aprovecha el cache de Docker si no cambian)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del proyecto
 COPY src/ src/
 COPY data/ data/
-COPY mlflow.db .
+
+# Entrenar el modelo DENTRO del contenedor, para que las rutas de MLflow
+# queden consistentes con el propio contenedor (evita rutas absolutas de Windows)
+RUN python -c "from src.churn.flows.training_pipeline import pipeline_entrenamiento; pipeline_entrenamiento()"
 
 EXPOSE 8000
 
