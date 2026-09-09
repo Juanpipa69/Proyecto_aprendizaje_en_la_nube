@@ -7,7 +7,7 @@
 El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI), con datos de comportamiento de uso de un operador de telecomunicaciones para predecir el abandono de clientes. Son 3,150 registros, 13 variables predictoras, todas numéricas desde el origen (sin texto que codificar) y sin nulos.
 
 | Categoría de Características | Descripción | Atributos Clave |
-| :--- | :--- | :--- 
+| :--- | :--- | :---
 | **Uso del servicio** | Volumen de llamadas, SMS y datos | `Seconds of Use`, `Frequency of use`, `Frequency of SMS`, `Distinct Called Numbers` |
 | **Calidad de servicio** | Fallos e incidencias | `Call Failure`, `Complains` |
 | **Plan y cuenta** | Antigüedad, tarifa y estado | `Subscription Length`, `Charge Amount`, `Tariff Plan`, `Status` |
@@ -45,6 +45,7 @@ El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI)
 
 * **Clonar el repositorio:** `git clone https://github.com/tu-usuario/Proyecto_aprendizaje_en_la_nube.git`
 * **Navegar a la carpeta:** `cd Proyecto_aprendizaje_en_la_nube`
+* **Crear y activar un entorno virtual:** `python -m venv venv` y luego `venv\Scripts\activate` (Windows) o `source venv/bin/activate` (Mac/Linux).
 * **Instalar dependencias:** `pip install -r requirements.txt`
 * **Ejecutar el pipeline de entrenamiento:** `python src/churn/flows/training_pipeline.py`
 * **Ver los experimentos en MLflow:** `mlflow ui --backend-store-uri sqlite:///mlflow.db`
@@ -54,7 +55,7 @@ El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI)
 ## 1.1 Selección del Proyecto
 * **Problema Elegido:** Predicción de Abandono (Churn) de Clientes en Telecomunicaciones. Es un problema de clasificación binaria.
 * **Problema de Negocio (Hipotético):** La empresa de telecomunicaciones está perdiendo ingresos debido a una alta tasa de cancelación de contratos. Retener a un cliente existente es mucho más barato que adquirir uno nuevo. Este modelo permitirá al equipo de retención identificar clientes de alto riesgo y ofrecerles promociones preventivas personalizadas, aumentando el LTV (Life Time Value) y reduciendo la pérdida de ingresos.
-* **Métricas de Éxito:** 
+* **Métricas de Éxito:**
   * **Técnica:** Maximizar el `F1-Score` y el `ROC-AUC` (dado que el dataset suele estar desbalanceado). Un Recall alto es crucial para no dejar escapar falsos negativos (clientes que se van pero el modelo no detectó).
   * **Negocio:** Reducir la tasa de churn mensual en un 15% en el segmento de alto riesgo.
 * **Alcance del Proyecto:**
@@ -68,8 +69,25 @@ El proyecto utiliza el archivo `Customer Churn.csv` (Iranian Churn Dataset, UCI)
 | **Fase 3:** Pipeline de Entrenamiento | Automatización con Prefect, validación de datos, feature engineering, scheduling | Ceneida | ✅ Completa |
 | **Fase 4:** Deployment | Dockerfile, API REST con FastAPI (`/predict`) | Ceneida | ✅ Completa |
 | **Fase 5:** Monitoreo | Reporte de drift (Evidently) + diseño de monitoreo (métricas, umbrales, plan de acción) | Compañero(a) / Mariana | ✅ Completa |
-| **Fase 6:** Testing y Best Practices | Unit tests, linter, pre-commit | Por asignar | ⏳ Pendiente |
+| **Fase 6:** Testing y Best Practices | Unit tests (`pytest`), linter (`ruff`), pre-commit hooks | Juan | ✅ Completa |
 
 > Para probar la API localmente: `python -m uvicorn src.churn.api.main:app --reload`, luego abrir `http://127.0.0.1:8000/docs`.|
 > Para correr la API con Docker: `docker build -t churn-api .` y luego `docker run -p 8000:8000 churn-api`.
 > Para generar el reporte de drift: `python Monitoring/drift_monitoring.py`, luego abrir `reports/data_drift_report.html`.
+
+
+## Calidad de código y tests (Fase 6)
+
+* **Linter:** `ruff`, configurado en `ruff.toml`.
+* **Tests unitarios:** `pytest`, en `tests/unit/` — cubren la validación de datos, limpieza, feature engineering y la lógica de la API (con modelo mockeado).
+* **Pre-commit hooks:** `.pre-commit-config.yaml` — limpieza de espacios, fin de archivo y `ruff` automático antes de cada commit.
+
+\`\`\`bash
+ruff check .                    # linter
+pytest -v                       # tests unitarios
+pre-commit run --all-files      # todos los hooks de pre-commit
+\`\`\`
+
+Para instalar los hooks de pre-commit la primera vez que clonas el repo: `pre-commit install`.
+
+> **Nota:** se corrigió `requirements.txt`, que estaba guardado en codificación UTF-16 (rompía `pip install` en algunos entornos) y se modernizó `src/churn/api/main.py` para usar `lifespan` en vez de `@app.on_event` y `model_config`/`model_dump` en vez de las APIs deprecadas de Pydantic v1.
