@@ -3,27 +3,32 @@ API REST para servir predicciones del modelo de Churn.
 Carga el modelo @champion desde MLflow y expone un endpoint de predicción.
 """
 
+from contextlib import asynccontextmanager
+
 import mlflow
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-
-app = FastAPI(
-    title="API de Predicción de Churn",
-    description="Predice si un cliente de telecomunicaciones va a cancelar su servicio.",
-    version="1.0.0",
-)
 
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 MODEL_URI = "models:/churn-random-forest@champion"
 modelo = None
 
 
-@app.on_event("startup")
-def cargar_modelo():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Carga el modelo @champion al iniciar la API (no en cada petición)."""
     global modelo
     modelo = mlflow.sklearn.load_model(MODEL_URI)
+    yield
+
+
+app = FastAPI(
+    title="API de Predicción de Churn",
+    description="Predice si un cliente de telecomunicaciones va a cancelar su servicio.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 
 class ClienteInput(BaseModel):
@@ -43,8 +48,7 @@ class ClienteInput(BaseModel):
     age: int = Field(..., gt=0, alias="Age")
     customer_value: float = Field(..., ge=0, alias="Customer Value")
 
-    class Config:
-        populate_by_name = True
+    model_config = {"populate_by_name": True}
 
 
 class PrediccionOutput(BaseModel):
@@ -68,7 +72,7 @@ def predecir(cliente: ClienteInput):
     if modelo is None:
         raise HTTPException(status_code=503, detail="El modelo aún no está cargado.")
 
-    datos = cliente.dict(by_alias=True)
+    datos = cliente.model_dump(by_alias=True)
     df = pd.DataFrame([datos])
 
     # Mismo feature engineering aplicado en el entrenamiento
