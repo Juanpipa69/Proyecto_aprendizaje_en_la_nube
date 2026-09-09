@@ -1,10 +1,9 @@
-import pandas as pd
-import numpy as np
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 from evidently import Report
 from evidently.presets import DataDriftPreset
-
 
 # ============================================================
 # 1. CONFIGURACIÓN DE RUTAS
@@ -30,7 +29,7 @@ print("\n1. Cargando dataset...")
 
 df = pd.read_csv(DATA_PATH)
 
-print(f"Dataset cargado correctamente.")
+print("Dataset cargado correctamente.")
 print(f"Número de registros: {len(df)}")
 print(f"Número de columnas: {len(df.columns)}")
 
@@ -184,7 +183,7 @@ print("\n" + "=" * 60)
 print("MONITOREO FINALIZADO")
 print("=" * 60)
 
-print(f"\nReporte generado correctamente en:")
+print("\nReporte generado correctamente en:")
 
 print(report_path)
 
